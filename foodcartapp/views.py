@@ -4,6 +4,8 @@ from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+
 from .models import Product, OrderDetails, OrderedProducts
 
 
@@ -63,6 +65,9 @@ def product_list_api(request):
 def register_order(request):
     try:
         new_order = request.data
+        if not isinstance(new_order['products'], list):
+            return Response({'error': 'Products key not presented or not list'},
+                            status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
         defaults = {
             'lastname': new_order.get('lastname', ''),
         }
