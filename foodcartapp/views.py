@@ -1,13 +1,24 @@
-import json
-import phonenumbers
-
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.serializers import ModelSerializer
 
 from .models import Product, OrderDetails, OrderedProducts
+
+
+class OrderedProductsSerializer(ModelSerializer):
+    class Meta:
+        model = OrderedProducts
+        fields = ['product', 'quantity']
+
+
+class OrderDetailsSerializer(ModelSerializer):
+    products = OrderedProductsSerializer(many=True, allow_empty=False)
+
+    class Meta:
+        model = OrderDetails
+        fields = ['firstname', 'lastname', 'phonenumber', 'address', 'products']
 
 
 def banners_list_api(request):
@@ -64,47 +75,17 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    try:
-        new_order = request.data
-        if 'products' not in new_order:
-            return Response({'error': 'Key "products" is missing in the request data'},
-                            status=status.HTTP_404_NOT_FOUND)
 
-        products = new_order['products']
+    serializer = OrderDetailsSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-        for item in products:
-            product_id = item.get('product')
+    order = OrderDetails.objects.get_or_create(firstname=serializer.validated_data['firstname'],
+                                               lastname=serializer.validated_data['lastname'],
+                                               phonenumber=serializer.validated_data['phonenumber'],
+                                               address=serializer.validated_data['address'])
 
-            try:
-                Product.objects.get(pk=product_id)
-            except Product.DoesNotExist:
-                return Response({'error': f'Product with id {product_id} does not exist'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        required_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
-
-        for field in required_fields:
-            if field not in new_order or not new_order[field]:
-                return Response({'error': f'{field} is required and cannot be empty'},
-                                status=status.HTTP_404_NOT_FOUND)
-
-        parsed_number = phonenumbers.parse(new_order['phonenumber'], "RU")
-        if not phonenumbers.is_valid_number(parsed_number):
-            return Response({'error': 'Products key not presented or not list'},
-                            status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-        defaults = {
-            'lastname': new_order.get('lastname', ''),
-        }
-
-        order = OrderDetails.objects.get_or_create(firstname=new_order['firstname'],
-                                                   phonenumber=new_order['phonenumber'],
-                                                   address=new_order['address'],
-                                                   defaults=defaults)
-        products = Product.objects.all()
-        for product in new_order['products']:
-            OrderedProducts.objects.create(product=products[product['product']-1],
-                                           quantity=product['quantity'],
-                                           order=order[0])
-        return Response({'message': 'Data successfully processed'})
-    except json.JSONDecodeError as e:
-        return Response({'error': 'Invalid JSON data', 'details': str(e)})
+    for product in serializer.validated_data['products']:
+        OrderedProducts.objects.create(product=product['product'],
+                                       quantity=product['quantity'],
+                                       order=order[0])
+    return Response(order[1])
