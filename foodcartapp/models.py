@@ -125,20 +125,20 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderDetails(models.Model):
-    first_name = models.CharField(verbose_name='имя', max_length=150)
-    last_name = models.CharField(verbose_name='фамилия', null=True, max_length=150,)
-    phone_number = PhoneNumberField(region="RU", verbose_name='Номер телефона',)
+    firstname = models.CharField(verbose_name='имя', max_length=150)
+    lastname = models.CharField(verbose_name='фамилия', null=True, max_length=150,)
+    phonenumber = PhoneNumberField(region="RU", verbose_name='Номер телефона',)
     address = models.CharField(verbose_name='адрес', max_length=150,)
 
     class Meta:
         verbose_name = 'заказ'
         verbose_name_plural = 'заказы'
         unique_together = [
-            ['first_name', 'address']
+            ['firstname', 'address']
         ]
 
     def __str__(self):
-        return f"{self.first_name} - {self.address}"
+        return f"{self.firstname} - {self.address}"
 
 
 class OrderedProducts(models.Model):
