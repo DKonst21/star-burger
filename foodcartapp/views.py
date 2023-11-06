@@ -1,4 +1,5 @@
 import json
+import phonenumbers
 
 from django.http import JsonResponse
 from django.templatetags.static import static
@@ -65,7 +66,30 @@ def product_list_api(request):
 def register_order(request):
     try:
         new_order = request.data
-        if not isinstance(new_order['products'], list):
+        if 'products' not in new_order:
+            return Response({'error': 'Key "products" is missing in the request data'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        products = new_order['products']
+
+        for item in products:
+            product_id = item.get('product')
+
+            try:
+                Product.objects.get(pk=product_id)
+            except Product.DoesNotExist:
+                return Response({'error': f'Product with id {product_id} does not exist'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        required_fields = ['products', 'firstname', 'lastname', 'phonenumber', 'address']
+
+        for field in required_fields:
+            if field not in new_order or not new_order[field]:
+                return Response({'error': f'{field} is required and cannot be empty'},
+                                status=status.HTTP_404_NOT_FOUND)
+
+        parsed_number = phonenumbers.parse(new_order['phonenumber'], "RU")
+        if not phonenumbers.is_valid_number(parsed_number):
             return Response({'error': 'Products key not presented or not list'},
                             status=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
         defaults = {
