@@ -137,6 +137,15 @@ class OrderDetails(models.Model):
     phonenumber = PhoneNumberField(region="RU", verbose_name='Номер телефона',)
     address = models.CharField(verbose_name='адрес', max_length=150,)
     objects = OrderDetailsQuerySet.as_manager()
+    STATUS_CHOICES = (
+        (1, 'Новый'),
+        (2, 'Принят'),
+        (3, 'Передан курьеру'),
+        (4, 'Выполнен'),
+    )
+    status = models.PositiveIntegerField(
+        verbose_name='статус', choices=STATUS_CHOICES, default=1, db_index=True,
+    )
 
     class Meta:
         verbose_name = 'заказ'
