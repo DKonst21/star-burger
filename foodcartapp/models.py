@@ -132,10 +132,10 @@ class OrderDetailsQuerySet(models.QuerySet):
 
 
 class OrderDetails(models.Model):
-    firstname = models.CharField(verbose_name='имя', max_length=150)
-    lastname = models.CharField(verbose_name='фамилия', null=True, max_length=150,)
+    firstname = models.CharField(verbose_name='Имя', max_length=150)
+    lastname = models.CharField(verbose_name='Фамилия', null=True, max_length=150,)
     phonenumber = PhoneNumberField(region="RU", verbose_name='Номер телефона',)
-    address = models.CharField(verbose_name='адрес', max_length=150,)
+    address = models.CharField(verbose_name='Адрес', max_length=150,)
     objects = OrderDetailsQuerySet.as_manager()
     STATUS_CHOICES = (
         (1, 'Новый'),
@@ -144,8 +144,9 @@ class OrderDetails(models.Model):
         (4, 'Выполнен'),
     )
     status = models.PositiveIntegerField(
-        verbose_name='статус', choices=STATUS_CHOICES, default=1, db_index=True,
+        verbose_name='Статус', choices=STATUS_CHOICES, default=1, db_index=True,
     )
+    comment = models.TextField(verbose_name='Комментарий', max_length=200, null=True, blank=True, default='')
 
     class Meta:
         verbose_name = 'заказ'
