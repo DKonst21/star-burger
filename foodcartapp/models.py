@@ -87,6 +87,7 @@ class Product(models.Model):
     )
 
     objects = ProductQuerySet.as_manager()
+    restaurants = models.ManyToManyField(Restaurant, related_name='products', verbose_name='рестораны')
 
     class Meta:
         verbose_name = 'товар'
@@ -131,12 +132,24 @@ class OrderDetailsQuerySet(models.QuerySet):
         price = Sum(F('ordered_products__fixed_price') * F('ordered_products__quantity'))
         return self.annotate(total_price=price)
 
+    def filter_restaurants_for_order(self, order_id):
+        order = self.get(pk=order_id)
+        chosen_restaurant = order.chosen_restaurant
+        if chosen_restaurant:
+            return Restaurant.objects.filter(pk=chosen_restaurant.pk).distinct()
+        else:
+            products = order.items.all().values_list('product_id', flat=True)
+            restaurants = Restaurant.objects.filter(menu_items__product_id__in=products).distinct()
+            for product_id in products:
+                restaurants = restaurants.filter(menu_items__product_id=product_id)
+            return restaurants.distinct()
+
 
 class OrderDetails(models.Model):
-    firstname = models.CharField(verbose_name='Имя', max_length=150)
-    lastname = models.CharField(verbose_name='Фамилия', null=True, max_length=150,)
+    firstname = models.CharField(verbose_name='имя', max_length=150)
+    lastname = models.CharField(verbose_name='фамилия', null=True, max_length=150,)
     phonenumber = PhoneNumberField(region="RU", verbose_name='Номер телефона',)
-    address = models.CharField(verbose_name='Адрес', max_length=150,)
+    address = models.CharField(verbose_name='адрес', max_length=150,)
     objects = OrderDetailsQuerySet.as_manager()
     STATUS_CHOICES = (
         (1, 'Новый'),
@@ -158,6 +171,8 @@ class OrderDetails(models.Model):
     registered_at = models.DateTimeField(verbose_name='Время регистрации', default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name='Время звонка менеджера', null=True, blank=True, db_index=True)
     delivered_at = models.DateTimeField(verbose_name='Время доставки', null=True, blank=True, db_index=True)
+    chosen_restaurant = models.ForeignKey(Restaurant, verbose_name='Ресторан', null=True, blank=True,
+                                          on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'заказ'

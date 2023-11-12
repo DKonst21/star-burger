@@ -93,5 +93,6 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = OrderDetails.objects.with_price()
-    redirect_url = request.get_full_path()
-    return render(request, template_name='order_items.html', context={"order_items": orders, 'redirect_url': redirect_url})
+    for order in orders:
+        order.restaurants = OrderDetails.objects.filter_restaurants_for_order(order.id)
+    return render(request, template_name='order_items.html', context={"order_items": orders, })
