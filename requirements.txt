@@ -7,4 +7,7 @@ phonenumbers==8.13.26
 geographiclib==2.0
 geopy==2.4.1
 requests==2.31.0
+djangorestframework==3.14.0
+python-dotenv==1.0.0
+
 
