@@ -132,7 +132,6 @@ def view_restaurants(request):
 def view_orders(request):
     orders = OrderDetails.objects.with_price()
     for order in orders:
-        # order.restaurants = OrderDetails.objects.filter_restaurants_for_order(order.id)
         restaurants = OrderDetails.objects.filter_restaurants_for_order(order.id)
         order_coordinates = fetch_coordinates(order.address)
 
