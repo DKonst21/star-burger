@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import F, Sum
 from django.utils import timezone
@@ -166,7 +166,7 @@ class OrderDetails(models.Model):
         (2, 'Электронно'),
     )
     payment_method = models.PositiveIntegerField(
-        verbose_name='Способ оплаты', choices=PAYMENT_CHOICES, default=1, db_index=True
+        verbose_name='Способ оплаты', choices=PAYMENT_CHOICES, default="Не указано", db_index=True
     )
     registered_at = models.DateTimeField(verbose_name='Время регистрации', default=timezone.now, db_index=True)
     called_at = models.DateTimeField(verbose_name='Время звонка менеджера', null=True, blank=True, db_index=True)
@@ -197,8 +197,7 @@ class OrderedProducts(models.Model):
                               verbose_name='заказ',)
     fixed_price = models.DecimalField(decimal_places=2,
                                       max_digits=5,
-                                      validators=[MinValueValidator(0, 0)],
-                                      default=0,
+                                      validators=[MinValueValidator(0.0), MaxValueValidator(10000.0)],
                                       verbose_name='Зафиксированная цена')
 
     class Meta:
