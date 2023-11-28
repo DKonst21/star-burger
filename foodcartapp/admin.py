@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
 from django.conf import settings
@@ -130,6 +130,6 @@ class OrderDetailsAdmin(admin.ModelAdmin):
         if next_url:
             allowed_hosts = settings.ALLOWED_HOSTS
             allowed_schemes = ['http', 'https']
-            if next_url and url_has_allowed_host_and_scheme(next_url, allowed_hosts, allowed_schemes):
-                return HttpResponseRedirect(next_url)
+            if url_has_allowed_host_and_scheme(next_url, allowed_hosts, allowed_schemes):
+                return redirect(next_url)
             return result
