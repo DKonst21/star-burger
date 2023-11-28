@@ -4,8 +4,8 @@ from django.utils import timezone
 
 class Place(models.Model):
     address = models.CharField('Адрес', max_length=255)
-    lat = models.DecimalField('Широта', max_digits=9, decimal_places=6)
-    lon = models.DecimalField('Долгота', max_digits=9, decimal_places=6)
+    lat = models.DecimalField('Широта', max_digits=9, decimal_places=6, null=True, blank=True)
+    lon = models.DecimalField('Долгота', max_digits=9, decimal_places=6, null=True, blank=True)
     geocode_date = models.DateField('Дата запроса', default=timezone.now,)
 
     class Meta:
@@ -13,4 +13,3 @@ class Place(models.Model):
 
     def __str__(self):
         return self.address
-
