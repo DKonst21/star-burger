@@ -18,6 +18,7 @@ class OrderDetailsSerializer(ModelSerializer):
             OrderedProducts.objects.create(
                 order=order,
                 price=product_data['product'].price,
+                phonenumber=product_data.validated_data['phonenumber'],
                 **product_data
             )
         return order
